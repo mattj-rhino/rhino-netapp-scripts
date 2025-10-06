@@ -1,0 +1,27 @@
+# activate the venv
+---
+- hosts: localhost
+  name: CLEAR DRIVES 
+  gather_facts: false
+  collections:
+   - netapp.ontap
+  tasks:
+  # ...existing code...
+  - name: Run 'disk show' command on NetApp
+    na_ontap_command:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: ['disk', 'show']
+      https: true
+      validate_certs: false
+      return_dict: true
+      privilege: 'advanced'
+    register: disk_show_output
+
+  - name: Debug disk show output
+    debug:
+      var: disk_show_output
+  - name: Pass output to Python script
+    command: python3 netapp_tester.py "{{ disk_show_output.msg.stdout_lines | to_json }}"
+
