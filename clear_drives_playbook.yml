@@ -23,5 +23,5 @@
     debug:
       var: disk_show_output
   - name: Pass output to Python script
-    command: python3 netapp_tester.py "{{ disk_show_output.msg.stdout_lines | to_json }}"
+    command: python3 netapp_tester.py "{{ disk_show_output.msg.stdout_lines | join('\n') }}"
 
