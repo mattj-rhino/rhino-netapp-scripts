@@ -1,12 +1,13 @@
 # activate the venv
+# create a vars.yml file with hostname, username, password, and the number of driveds to clear
+# run the playbook with: ansible-playbook clear_drives_playbook.yml -e @vars.yml
 ---
 - hosts: localhost
-  name: CLEAR DRIVES 
+  name: CLEAR DRIVES
   gather_facts: false
   collections:
    - netapp.ontap
   tasks:
-  # ...existing code...
   - name: Run 'disk show' command on NetApp
     na_ontap_command:
       hostname: "{{ hostname }}"
@@ -19,9 +20,52 @@
       privilege: 'advanced'
     register: disk_show_output
 
-  - name: Debug disk show output
+  - name: Generate remove owners command
     debug:
       var: disk_show_output
-  - name: Pass output to Python script
-    command: python3 netapp_tester.py "{{ disk_show_output.msg.stdout_lines | join('\n') }}"
+  - name: Pass output to Python script via stdin
+    shell: echo '{{ disk_show_output.msg.stdout_lines | to_json }}' | python3 remove_owners.py
+    args:
+      executable: /bin/bash
+    register: remove_owners_output
 
+  - name: Display Python remove_owners output
+    debug:
+      msg: "{{ remove_owners_output.stdout_lines }}"
+
+  - name: Assign unowned disks to a specific node
+    na_ontap_command:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: ['disk', 'assign', '-all', '-node', '{{ node }}']
+      https: true
+      validate_certs: false
+      return_dict: true
+      privilege: 'advanced'
+
+  - name: Generate unfail disks command
+    debug:
+      var: disk_show_output
+  - name: Pass output to Python script via stdin
+    shell: echo '{{ disk_show_output.msg.stdout_lines | to_json }}' | python3 unfail_disks.py
+    args:
+      executable: /bin/bash
+    register: unfail_disks_output
+
+  - name: Display Python unfail_disks output
+    debug:
+      msg: "{{ unfail_disks_output.stdout_lines }}"
+
+  - name: Zero the spare disks
+    na_ontap_command:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: ['disk', "zerospares"]
+      https: true
+      validate_certs: false
+      return_dict: true
+      privilege: 'advanced'
+
+# Remove owners script
