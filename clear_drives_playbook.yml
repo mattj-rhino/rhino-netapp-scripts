@@ -32,6 +32,17 @@
   - name: Display Python remove_owners output
     debug:
       msg: "{{ remove_owners_output.stdout_lines }}"
+  
+  - name: Remove owners from disks
+    na_ontap_command:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: "{{ remove_owners_output.stdout_lines }}"
+      https: true
+      validate_certs: false
+      return_dict: true
+      privilege: 'advanced'
 
   - name: Assign unowned disks to a specific node
     na_ontap_command:
@@ -56,6 +67,17 @@
   - name: Display Python unfail_disks output
     debug:
       msg: "{{ unfail_disks_output.stdout_lines }}"
+    
+  - name: Unfail disks
+    na_ontap_command:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: "{{ unfail_disks_output.stdout_lines }}"
+      https: true
+      validate_certs: false
+      return_dict: true
+      privilege: 'advanced' 
 
   - name: Zero the spare disks
     na_ontap_command:
@@ -67,5 +89,11 @@
       validate_certs: false
       return_dict: true
       privilege: 'advanced'
+
+  - name: Display complete
+    debug:
+      msg: "All specified drives have been cleared."
+    
+
 
 # Remove owners script
