@@ -1,0 +1,22 @@
+# Get the health of all drives in the node
+# Can be obtained via: storage disk show -ssd-wear
+# Explore: https://docs.ansible.com/projects/ansible/latest/collections/netapp/ontap/na_ontap_rest_cli_module.html#parameters
+
+---
+- hosts: localhost
+  name: Setup ONTAP
+  gather_facts: false
+  collections:
+   - netapp.ontap
+  tasks:
+  - name: Run ONTAP REST CLI command
+    netapp.ontap.na_ontap_rest_cli:
+      hostname: "{{ hostname }}" 
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: storage disk show -fields ssd-wear
+      validate_certs: false
+      verb: GET
+    register: ontap_rest_cli_output
+  - debug:
+      msg: "{{ ontap_rest_cli_output }}"

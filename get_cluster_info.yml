@@ -7,8 +7,7 @@
    - netapp.ontap
   tasks:
   - name: Gather facts
-    na_ontap_info:
-      state: info
+    netapp.ontap.na_ontap_rest_info:
       gather_subset: cluster_node_info
       hostname: "{{ hostname }}"
       username: "{{ username }}"
