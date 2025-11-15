@@ -14,9 +14,11 @@
       hostname: "{{ hostname }}" 
       username: "{{ username }}"
       password: "{{ password }}"
-      command: storage disk show -fields ssd-wear
+      command: disk
       validate_certs: false
       verb: GET
+      params:
+        fields: ssd-wear
     register: ontap_rest_cli_output
   - debug:
       msg: "{{ ontap_rest_cli_output }}"
